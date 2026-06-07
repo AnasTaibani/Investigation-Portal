@@ -1,0 +1,36 @@
+{
+  "summary": "Findings submission workflow fully verified end-to-end (backend + frontend). All 4 pytest tests pass and UI flow correctly persists findings, transitions status to submitted, creates 'findings_submitted' timeline event, and reflects in Investigations list.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "verifications": {
+    "login_investigator": "PASS - investigator@test.com / Investigator@123 logs in, lands on /workbench",
+    "POST /api/investigations/{id}/findings": "PASS - returns 200 {message:'Findings submitted successfully', status:'submitted'} for valid payload; returns 400 'complete at least one service or upload evidence' when no service complete (correct guard); 422 when missing required fields",
+    "GET /api/investigations/{id}/findings": "PASS - returns full findings object {observations, conclusion, outcome, recommendation, submitted_by_name, submitted_at}",
+    "Status transition": "PASS - investigation.status changes in_progress -> submitted after findings submission",
+    "Timeline event": "PASS - activity 'Investigation findings submitted - Outcome: genuine, Recommendation: approve' created",
+    "INV000010 persistence": "PASS - previously submitted findings still intact",
+    "UI - Submit Findings modal": "PASS - form fields work (observations, conclusion, outcome Select, recommendation Select), submit triggers API, modal closes, toast shown",
+    "UI - Findings tab display": "PASS - displays observations + conclusion + outcome + recommendation correctly using new schema",
+    "UI - Status badge": "PASS - badge updates to 'submitted' on detail page after submission",
+    "UI - Timeline tab": "PASS - shows 'Investigation findings submitted' entry with outcome/recommendation",
+    "UI - Investigations list reflects status": "PASS - INV000075 row shows 'submitted' badge after refresh"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_findings_workflow.py",
+    "/app/test_reports/pytest/findings_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "POST /api/investigations/{id}/findings returns only {message, status} - consider returning the full findings object for consistency with GET, so frontend can update state without re-fetch",
+    "Backend guard '...complete at least one service or upload evidence' returns 400 with detail; frontend modal does surface this via error.response.data.detail - good",
+    "server.py still 1100+ lines - prior recommendation to split into routers remains"
+  ],
+  "updated_files": ["/app/backend/tests/test_findings_workflow.py"],
+  "success_rate": {"backend": "100% (4/4)", "frontend": "100%"},
+  "test_credentials": "investigator@test.com / Investigator@123 (works); admin/assessor per /app/memory/test_credentials.md",
+  "seed_data_creation": "Used existing seed; auto-completed one pending service on chosen in_progress case (INV000075) to satisfy backend submission guard. Test data observations/conclusion prefixed with 'TEST_' or 'UI TEST'.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Findings submission bug is FIXED. Backend requires at least one completed service OR uploaded evidence before findings can be submitted (returns 400 otherwise). Frontend handleSubmitFindings now correctly accepts formData param. Test cases used: INV000075 via UI (now submitted), INV000010 already submitted, INV000034 referenced in problem statement. To find a testable in_progress case, prefer one with a completed service or first mark a pending service complete via PUT /api/investigations/{id}/services/{sid}.",
+  "rca of the issue": "Root cause was previously identified: frontend handleSubmitFindings referenced an undefined 'findingsForm' variable causing silent failures. Fix verified: handler now accepts formData from SubmitFindingsModal callback and posts to /api/investigations/{id}/findings. All four originally reported issues are resolved: (1) findings persist, (2) status moves in_progress->submitted, (3) timeline shows correct 'findings submitted' event, (4) list/workbench reflect new status after navigation."
+}

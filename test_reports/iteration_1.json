@@ -1,0 +1,41 @@
+{
+  "summary": "Tested Investigation Portal auth + core flows. Backend: 13/14 pytest cases pass. Login API works, cookies set correctly (HttpOnly, Secure, SameSite=none), /auth/me returns 200 with cookie. Frontend: After successful login the UI does NOT redirect to /dashboard - user stays stuck on /login. Manually navigating to /dashboard works (proves session is valid). /investigations page crashes with Radix Select runtime error.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/auth/me", "issue": "Returns mongo '_id' field instead of normalized 'id'. Other endpoints (/api/users, /api/categories) correctly rename _id->id. Inconsistent shape; works because frontend only reads role/email."},
+      {"endpoint": "CORS", "issue": "Response includes 'Access-Control-Allow-Origin: *' together with 'Access-Control-Allow-Credentials: true' (added by Cloudflare/ingress, overrides FastAPI CORSMiddleware). This is invalid per CORS spec and would break true cross-origin requests. Currently works because frontend and backend share the same origin field-ops-44.preview.emergentagent.com (same-origin, no CORS enforcement)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Login.js", "issue": "After successful login (API 200, cookies set, setUser(data) called), the page does NOT navigate to /dashboard. handleSubmit never calls useNavigate. User stays on /login form indefinitely.", "selector": "[data-testid=login-submit-button]", "priority": "CRITICAL"},
+      {"component": "Investigations page (Select filter)", "issue": "Uncaught runtime error: 'A <Select.Item /> must have a value prop that is not an empty string.' Page renders blank/error overlay on /investigations.", "selector": "/investigations route", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [
+      {"flow": "Login -> Dashboard redirect", "issue": "Auth flow at API level works (cookies set, /auth/me returns 200, dashboard renders when navigated to). Missing client-side navigation after successful login in Login.js.", "affected_selectors": ["[data-testid=login-submit-button]"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_auth_and_core.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix Login.js: import useNavigate from react-router-dom and call navigate('/dashboard') after result.success === true. Optionally also redirect to /dashboard from Login route when user is already authenticated.",
+    "Fix /investigations page: find the <SelectItem value=''> (empty string) in the filter/status dropdown and replace empty value with a non-empty sentinel like 'all' (and handle that in filter logic).",
+    "Normalize /api/auth/me response: rename _id -> id (or pop _id) similar to /api/users and /api/categories handlers to keep response shape consistent.",
+    "(Optional) Replace 'Access-Control-Allow-Origin: *' issue: not a same-origin problem today, but if the app ever serves the frontend from a different host this will break cookie auth in browsers. Consider configuring ingress to echo the request Origin when credentials are used."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 979 lines - should be split into modules (auth, users, categories, investigations, evidence).",
+    "get_current_user keeps '_id' on the user dict; /auth/me leaks mongo field name.",
+    "Login.js has no post-success navigation; relying solely on state change is fragile because the Login route has no redirect-when-authenticated guard.",
+    "Investigation list crashes the whole React tree due to a Select.Item with empty string value - should be caught with an error boundary AND fixed at source."
+  ],
+  "updated_files": ["/app/backend/tests/test_auth_and_core.py"],
+  "success_rate": {"backend": "93%", "frontend": "40%"},
+  "test_credentials": "admin@investigationportal.com / Admin@123 (admin) - verified working. investigator@test.com / Investigator@123 - login returned 200 in pytest (user is seeded).",
+  "seed_data_creation": "None created; relied on existing seeded admin, investigator, and categories.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Auth API + cookies + /auth/me all confirmed working server-side. Backend pytest at /app/backend/tests/test_auth_and_core.py (13/14 pass; only CORS-wildcard assertion fails, which is enforced by ingress, not FastAPI). Two FE blockers remain: (1) Login.js missing navigate after success, (2) Investigations page Select.Item empty-value crash. After main agent fixes these two, re-run the same playwright login->dashboard->investigations flow.",
+  "rca_of_the_issue": "Original report claimed '/auth/me returns 401 and cookies not sent'. Reproduction with both curl and Playwright shows cookies ARE set on the browser (access_token, refresh_token, HttpOnly+Secure+SameSite=none) and /auth/me returns 200 with user payload. The actual user-visible symptom ('login does nothing') is caused by Login.js not redirecting after success - the user state IS updated but the user remains on /login because no <Navigate> guard exists and handleSubmit never calls useNavigate. Mitigation: add `const navigate = useNavigate();` and `if (result.success) navigate('/dashboard');` in Login.js handleSubmit, plus add a redirect in the /login route when user is already authenticated."
+}

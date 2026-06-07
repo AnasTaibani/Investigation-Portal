@@ -1,0 +1,120 @@
+{
+  "theme_and_archetype": {
+    "theme": "Light Theme ONLY",
+    "archetype": "Archetype 4 (Swiss & High-Contrast) + Soft SaaS (Stripe/Linear/Notion influence)",
+    "rationale": "An enterprise investigation platform needs authority, clarity, and trust. Combining a clear, high-contrast layout with modern, frictionless SaaS aesthetics (soft surfaces, no borders) creates a premium experience that aligns with the MetaMorphoSys brand."
+  },
+  "color_palette": {
+    "backgrounds": {
+      "app_bg": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "surface_elevated": "#FFFFFF",
+      "surface_subtle": "#F1F5F9"
+    },
+    "brand": {
+      "deep_blue": "#1E3A8A",
+      "corporate_blue": "#1976D2",
+      "light_blue": "#42A5F5",
+      "sky_blue": "#90CAF9",
+      "focus_ring": "rgba(25, 118, 210, 0.25)"
+    },
+    "text": {
+      "primary": "#0F172A",
+      "secondary": "#475569",
+      "tertiary": "#64748B"
+    },
+    "status": {
+      "success": "#16A34A",
+      "warning": "#D97706",
+      "error": "#DC2626",
+      "info": "#1976D2"
+    },
+    "rules": [
+      "CRITICAL: Remove all dark mode colors and classes (.dark) from tailwind.config.js, index.css, and App.css.",
+      "CRITICAL: Do NOT use pure #000000. Use Slate 900 (#0F172A) for highest contrast text.",
+      "Focus state MUST use Corporate Blue with ring-offset."
+    ]
+  },
+  "typography": {
+    "heading_font": "Outfit",
+    "body_font": "Figtree",
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900",
+      "h2": "text-2xl sm:text-3xl font-medium tracking-tight text-slate-900",
+      "h3": "text-xl sm:text-2xl font-medium tracking-tight text-slate-900",
+      "h4": "text-lg font-medium tracking-tight text-slate-800",
+      "body": "text-base text-slate-600 leading-relaxed",
+      "label": "text-xs uppercase tracking-[0.15em] font-semibold text-slate-500"
+    },
+    "rules": [
+      "NO INTER FOR HEADINGS. Use 'Outfit' for all headings.",
+      "Apply tight letter spacing (tracking-tight) to all headings larger than 24px.",
+      "Use explicit left-alignment for dense content like forms and tables."
+    ]
+  },
+  "layout_spacing": {
+    "philosophy": "Generous, breathable, structural.",
+    "dashboard_grid": "Control Room Grid: grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-6.",
+    "containers": "Use generous padding (p-6, p-8) inside cards. Avoid p-4 unless the space is highly constrained.",
+    "border_philosophy": {
+      "rule": "BORDERLESS. Avoid visible borders (border: 1px solid).",
+      "alternative": "Use spacing, background contrast (White vs Slate 50), and soft premium shadows.",
+      "exception": "If borders are absolutely necessary (e.g., table header row separation), use extremely subtle border-slate-100."
+    }
+  },
+  "surface_strategies": {
+    "cards": "bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-none. Hover state: shadow-[0_8px_30px_rgba(25,118,210,0.08)] -translate-y-[2px] transition-all duration-300.",
+    "modals": "Portal-based (z-50). Backdrop: bg-slate-900/20 backdrop-blur-sm. Surface: bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.1)]. Header and footer must be sticky.",
+    "forms": "Inputs: bg-slate-50 border-none rounded-xl px-4 py-3 shadow-inner text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/40 transition-all."
+  },
+  "components_refactor_rules": {
+    "modals": [
+      "Use portal-based logic (e.g., Shadcn Dialog or React createPortal).",
+      "Ensure backdrop overlay is properly configured to prevent background content bleed-through.",
+      "Set modal max-height to 85vh and make ONLY the body scrollable (overflow-y-auto).",
+      "Header and Footer must remain sticky/fixed within the modal container."
+    ],
+    "file_uploader": [
+      "Redesign to a massive dropzone: bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center.",
+      "On drag active: border-brand-primary bg-brand-primary/5.",
+      "Show file preview cards with a subtle soft shadow and a clear remove button.",
+      "Add dedicated inputs for Notes and Location below the dropzone with equal spacing."
+    ],
+    "investigation_findings": [
+      "Structure as a guided multi-step or scrolling bento-layout form to fix overlapping labels.",
+      "Use a 'Progress Tracker' or 'Investigation Summary Card' pinned at the top.",
+      "Use large text areas with soft backgrounds for 'Observations', 'Findings', 'Conclusion', and 'Recommendation'.",
+      "Ensure vertical stacking (flex-col) for form groups to prevent horizontal squeezing."
+    ],
+    "tables": [
+      "Remove heavy grid borders entirely.",
+      "Use clear separation: border-b border-slate-100 only on the row, not columns.",
+      "Implement alternating row backgrounds (even:bg-slate-50/50) or hover states (hover:bg-slate-50 transition-colors).",
+      "Generous cell padding: px-6 py-4."
+    ],
+    "navigation_sidebar": [
+      "Clean, borderless, icon-driven.",
+      "Active state: bg-brand-primary/10 text-brand-primary rounded-xl font-medium.",
+      "Inactive state: text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl."
+    ]
+  },
+  "testing_attributes": {
+    "rule": "All interactive and key informational elements MUST include a data-testid attribute.",
+    "format": "kebab-case, role-based. Examples: data-testid='submit-findings-btn', data-testid='upload-evidence-dropzone', data-testid='kpi-total-investigations'."
+  },
+  "icons": {
+    "library": "@phosphor-icons/react",
+    "rationale": "Best for dense enterprise dashboards. Use Duotone weight for a premium Stripe-like aesthetic.",
+    "command": "yarn add @phosphor-icons/react"
+  },
+  "instructions_to_main_agent": [
+    "1. STRIP all dark mode classes (`dark:`, `dark`, etc.) from all files including tailwind.config.js, index.css, and App.css.",
+    "2. REMOVE heavy borders (`border`, `border-gray-200`, etc.) from all cards, inputs, and tables. Replace with the soft shadow classes defined in surface_strategies.",
+    "3. REFACTOR ALL FORMS to use soft inputs (`bg-slate-50`, `border-none`) with Corporate Blue focus rings.",
+    "4. COMPLETELY REWRITE the Upload Evidence Modal: Use a portal (Shadcn Dialog), sticky footer, and a modern drag-and-drop zone.",
+    "5. COMPLETELY REWRITE the Submit Findings Modal: Increase padding, improve visual hierarchy, and ensure labels don't overlap by using a vertical stack layout (`flex-col`) instead of tight horizontal layouts.",
+    "6. ADD `data-testid` to every single button, input, and modal trigger you modify or create.",
+    "7. MODERNIZE TABLES: Implement alternating table rows (`even:bg-slate-50/50`) and hover states (`hover:bg-slate-50`) without vertical borders. Add generous padding.",
+    "8. DASHBOARD: Refactor KPI Cards, Activity Timeline, Charts, and Status Widgets to follow the 'borderless' and 'soft shadow' rules, using the Control Room Grid layout."
+  ]
+}

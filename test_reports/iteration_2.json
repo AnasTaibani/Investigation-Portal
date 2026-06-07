@@ -1,0 +1,42 @@
+{
+  "summary": "Verified database seeding (90 cases - 31 assigned without evidence, 59 mixed with evidence) and Service Tab Evidence Synchronization bug fix. Backend filter by linked_services array works correctly. Frontend Services tab now correctly displays evidence for linked services and 'No evidence uploaded yet' for non-linked services.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/investigations", "issue": "Status distribution 31/18/18/23 (assigned/in_progress/submitted/completed) - no cases in 'rework_requested' or 'closed' status. Not a bug but reduces test coverage of those states."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verifications": {
+    "login_investigator": "PASS - investigator@test.com / Investigator@123 logs in successfully",
+    "seed_data_counts": "PASS - 90 cases total. By status: assigned=31 (target 30-35), in_progress=18, submitted=18, completed=23. 34 cases have evidence linked, 56 have none (all assigned cases have zero evidence as required).",
+    "evidence_library_api": "PASS - GET /api/investigations/INV000035/evidence/library returns evidence with enriched linked_service_details",
+    "evidence_filter_by_service": "PASS - GET /api/investigations/INV000035/evidence?service_id=<linked> returns evidence; ?service_id=<unlinked> returns []",
+    "services_tab_sync_bug": "FIXED - INV000035 Services tab: 'Mobile Photo/Video Capture' (linked) displays id_card_scan.pdf with badge count 1; 'Report Drafting - Final' (not linked) correctly shows 'No evidence uploaded yet'",
+    "investigation_detail_loads": "PASS - /investigations/INV000035 renders correctly with Overview, Services, Evidence Library, Findings, Timeline tabs",
+    "evidence_count_badges": "PASS - service header shows evidence count badge (1) on Mobile Photo service"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_auth_and_core.py (existing)"
+  ],
+  "action_items": [
+    "Consider seeding a few cases in 'rework_requested' and 'closed' statuses for full coverage testing of those flows"
+  ],
+  "critical_code_review_comments": [
+    "server.py is 1124 lines - exceeds 700 line guideline; should be split into routers/auth, routers/investigations, routers/evidence modules",
+    "Auth cookies use samesite='none' + secure=True which is correct for cross-site preview env, but requires HTTPS only",
+    "download_evidence (line 759-761) mutates request.headers._list directly via __dict__ - hacky pattern; should pass auth via dependency",
+    "No pagination on list endpoints (.to_list(1000)) - will not scale beyond 1000 records"
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "investigator@test.com / Investigator@123 (works); admin@investigationportal.com / Admin@123 (per /app/memory/test_credentials.md)",
+  "seed_data_creation": "Not created - existing seed via /app/backend/seed_80_cases.py already produced 90 cases matching requirements",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Service Tab Evidence Synchronization bug is FIXED and verified end-to-end via UI + API. Frontend route is /investigations/:investigationId (plural). Test with INV000035 (completed, has id_card_scan.pdf linked to Mobile Photo service) - the gold case for evidence flow testing. All 31 'assigned' cases correctly have zero evidence."
+}
