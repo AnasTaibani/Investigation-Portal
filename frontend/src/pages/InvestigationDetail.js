@@ -62,7 +62,7 @@ const InvestigationDetail = () => {
   const navigate = useNavigate();
   const [investigation, setInvestigation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('services');
   const [evidenceByService, setEvidenceByService] = useState({});
   const [uploadingService, setUploadingService] = useState(null);
   const [findings, setFindings] = useState(null);
@@ -354,9 +354,6 @@ const InvestigationDetail = () => {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-card border-0 p-1.5 shadow-premium rounded-xl">
-            <TabsTrigger value="overview" data-testid="tab-overview" className="rounded-lg">
-              Overview
-            </TabsTrigger>
             <TabsTrigger value="services" data-testid="tab-services" className="rounded-lg">
               Services
             </TabsTrigger>
